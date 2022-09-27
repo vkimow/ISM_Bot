@@ -1,56 +1,70 @@
+from asyncore import write
 import imp
 import telebot
 import config
 
-from config import create_google_service
+from config import create_google_service, Resources
+from google_sheet_parser import Parser
 
 bot = telebot.TeleBot(config.BotTokens.Main)
 service = create_google_service()
 
+sheet = Parser.get_google_sheet(service, config.SpreadsheetIds.Resource, 'Материалы', 'A', 'B')
 
-# def send_message(id, photo_path=None, photo=None, text=None, reply_markup=None, parse_mode='Markdown'):
-#     if photo:
-#         return bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, parse_mode=parse_mode)
-#     elif photo_path:
-#         with open(photo_path, 'rb') as photo:
-#             return bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup,
-#                                   parse_mode=parse_mode)
-#     else:
-#         return bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, parse_mode=parse_mode)
+for i in range(Parser.get_col_length(sheet)):
+    for y in range(Parser.get_row_length(sheet)):
+        print(Parser.get_cell_value(sheet, i, y))
+        print(Parser.set_cell_value(sheet, i, y, 'col{}row{}'.format(i, y)))
+        print(Parser.get_cell_value(sheet, i, y))
 
+sheet = Parser.set_google_sheet(service, config.SpreadsheetIds.Resource, 'Материалы', sheet['values'], 'A', 'B')
 
-# def edit_message(message, text=None, reply_markup=None, parse_mode='Markdown'):
-#     if message.photo:
-#         return bot.edit_message_caption(chat_id=message.chat.id, message_id=message.message_id, caption=text,
-#                                         reply_markup=reply_markup, parse_mode=parse_mode)
-#     else:
-#         return bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=text,
-#                                      reply_markup=reply_markup, parse_mode=parse_mode)
-
-
-# def edit_photo(message, photo_path=None, photo=None, reply_markup=None, parse_mode='Markdown'):
-#     if message.photo:
-#         if photo:
-#             media = types.InputMediaPhoto(photo)
-#             return bot.edit_message_media(media=media, chat_id=message.chat.id, message_id=message.message_id,
-#                                           reply_markup=reply_markup)
-#         elif photo_path:
-#             with open(photo_path, 'rb') as photo:
-#                 media = types.InputMediaPhoto(photo)
-#                 return bot.edit_message_media(media=media, chat_id=message.chat.id, message_id=message.message_id,
-#                                               reply_markup=reply_markup)
-#         else:
-#             return bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
-#                                          text='ОШИБКА! Вы не передали фото для изменения!', reply_markup=None,
-#                                          parse_mode=parse_mode)
-#     else:
-#         return bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
-#                                      text='ОШИБКА! У этого сообщения нет фото, которое можно изменить!',
-#                                      reply_markup=None, parse_mode=parse_mode)
+def send_message(id, photo_path=None, photo=None, text=None, reply_markup=None, parse_mode='Markdown'):
+    if photo:
+        return bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, parse_mode=parse_mode)
+    elif photo_path:
+        with open(photo_path, 'rb') as photo:
+            return bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup,
+                                  parse_mode=parse_mode)
+    else:
+        return bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, parse_mode=parse_mode)
 
 
-# def show_timetable(message):
-#     send_message(message.chat.id, photo_path=Resources.Timetable.today, reply_markup=Markup.Timetable.today)
+def edit_message(message, text=None, reply_markup=None, parse_mode='Markdown'):
+    if message.photo:
+        return bot.edit_message_caption(chat_id=message.chat.id, message_id=message.message_id, caption=text,
+                                        reply_markup=reply_markup, parse_mode=parse_mode)
+    else:
+        return bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=text,
+                                     reply_markup=reply_markup, parse_mode=parse_mode)
+
+
+def edit_photo(message, photo_path=None, photo=None, reply_markup=None, parse_mode='Markdown'):
+    if message.photo:
+        if photo:
+            media = types.InputMediaPhoto(photo)
+            return bot.edit_message_media(media=media, chat_id=message.chat.id, message_id=message.message_id,
+                                          reply_markup=reply_markup)
+        elif photo_path:
+            with open(photo_path, 'rb') as photo:
+                media = types.InputMediaPhoto(photo)
+                return bot.edit_message_media(media=media, chat_id=message.chat.id, message_id=message.message_id,
+                                              reply_markup=reply_markup)
+        else:
+            return bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
+                                         text='ОШИБКА! Вы не передали фото для изменения!', reply_markup=None,
+                                         parse_mode=parse_mode)
+    else:
+        return bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id,
+                                     text='ОШИБКА! У этого сообщения нет фото, которое можно изменить!',
+                                     reply_markup=None, parse_mode=parse_mode)
+
+
+def show_timetable(message):
+    send_message(message.chat.id, photo_path=Resources.action)
+
+def show_appointment(message):
+    send_message(message.chat.id, )
 
 
 # def show_services(message):
