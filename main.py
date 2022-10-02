@@ -3,21 +3,14 @@ import imp
 import telebot
 import config
 
-from config import create_google_service, Resources
-from google_sheet_parser import Parser
+from telebot import types
+from config import create_google_service, Resources, SpreadsheetIds
+from markup import Markup
+from massage_parser import parse
 
-bot = telebot.TeleBot(config.BotTokens.Main)
+bot = telebot.TeleBot(config.BotTokens.main)
 service = create_google_service()
-
-sheet = Parser.get_google_sheet(service, config.SpreadsheetIds.Resource, 'Материалы', 'A', 'B')
-
-for i in range(Parser.get_col_length(sheet)):
-    for y in range(Parser.get_row_length(sheet)):
-        print(Parser.get_cell_value(sheet, i, y))
-        print(Parser.set_cell_value(sheet, i, y, 'col{}row{}'.format(i, y)))
-        print(Parser.get_cell_value(sheet, i, y))
-
-sheet = Parser.set_google_sheet(service, config.SpreadsheetIds.Resource, 'Материалы', sheet['values'], 'A', 'B')
+massage = parse(service, SpreadsheetIds.main)
 
 def send_message(id, photo_path=None, photo=None, text=None, reply_markup=None, parse_mode='Markdown'):
     if photo:
@@ -60,178 +53,56 @@ def edit_photo(message, photo_path=None, photo=None, reply_markup=None, parse_mo
                                      reply_markup=None, parse_mode=parse_mode)
 
 
-def show_timetable(message):
+def show_actions(message):
     send_message(message.chat.id, photo_path=Resources.action)
 
 def show_appointment(message):
-    send_message(message.chat.id, )
+    send_message(message.chat.id, photo_path=Resources.background('appointment'), reply_markup=Markup.Appointment.main(massage.specialists))
+
+def show_lectures(message):
+    send_message(message.chat.id, photo_path=Resources.background('lectures'), reply_markup=Markup.Lectures.main(massage.lectures))
+    return
+
+def show_anatomy(message):
+    send_message(message.chat.id, photo_path=Resources.background('anatomy'), reply_markup=Markup.Anatomy.main(massage.anatomy))
+    return
+
+@bot.message_handler(commands=['appointment'])
+def appointment_command(message):
+    show_appointment(message)
+
+@bot.message_handler(commands=['actions'])
+def actions_command(message):
+    show_actions(message)
+
+@bot.message_handler(commands=['lectures'])
+def lectures_command(message):
+    show_lectures(message)
+
+@bot.message_handler(commands=['anatomy'])
+def anatomy_command(message):
+    show_anatomy(message)
+
+@bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'appointment')
+def appointment_callback(call):
+    keyword = call.data.split()[1]
+    if keyword == 'cancel':
+        edit_message(call.message, text='Запись отменена')
+    bot.answer_callback_query(call.id)
 
 
-# def show_services(message):
-#     services_info = solovki.get_services_info()
-#     send_message(message.chat.id, photo_path=Resources.Images.background_3, text=services_info)
+@bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'anatomy')
+def anatomy_callback(call):
+    keyword = call.data.split()[1]
+    if keyword == 'back':
+        edit_message(call.message, reply_markup=Markup.Anatomy.main(massage.anatomy))
+    elif keyword == 'organ':
+        organ = call.data.split()[2]
+        edit_message(call.message, text=massage.anatomy[organ].content, reply_markup=Markup.Anatomy.back())
 
+    bot.answer_callback_query(call.id)
 
-# def show_squads(message):
-#     send_message(message.chat.id, photo_path=Resources.Images.background_1, reply_markup=Markup.Squads.show)
-
-
-# def show_commanders(message):
-#     commanders_info = solovki.get_commanders_info()
-#     send_message(message.chat.id, photo_path=Resources.Images.background_5, text=commanders_info, reply_markup=Markup.Commanders.show)
-
-
-# def show_people(message):
-#     info = Person.Info.Compact
-#     send_message(message.chat.id, text=solovki.get_squad_people_info(Person.Sort.surname, info),
-#                  reply_markup=Markup.People.show)
-
-
-# def show_other(message):
-#     send_message(message.chat.id, photo_path=Resources.Images.background_4,
-#                  reply_markup=Markup.Other.show(message.from_user))
-
-
-# def show_edit(message):
-#     if is_right_user(message.from_user, admins.get_users_who_can_edit_something()):
-#         send_message(message.chat.id, photo_path=Resources.Images.background_4,
-#                      reply_markup=Markup.Edit.show(message.from_user))
-
-
-# def show_admins(message):
-#     if is_right_user(message.from_user, admins.get_users_who_can_manage_admins()):
-#         send_message(message.chat.id, photo_path=Resources.Images.background_4, reply_markup=Markup.Admins.show)
-
-
-# def show_help(message):
-#     send_message(message.chat.id, text='help')
-
-
-# def show_sbor(message):
-#     sbor_info = solovki.get_solovki_info()
-#     send_message(message.chat.id, photo_path=Resources.Images.background_2, text=sbor_info)
-
-
-# @bot.message_handler(commands=['start'])
-# def start_command(message):
-#     Tools.log(message=message)
-#     users.add_user(message.from_user.id)
-#     users.save()
-#     send_message(message.chat.id, text='Привет!', reply_markup=Markup.Main.show)
-
-
-# @bot.message_handler(commands=['restart'])
-# def restart_command(message):
-#     Tools.log(message=message)
-#     start_command(message)
-
-
-# @bot.message_handler(commands=['edit'], is_admin=True)
-# def edit_command(message):
-#     Tools.log(message=message)
-#     show_edit(message)
-
-
-# @bot.message_handler(commands=['admins'], is_admin=True)
-# def admins_command(message):
-#     Tools.log(message=message)
-#     show_admins(message)
-
-
-# @bot.message_handler(commands=['help'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_help(message)
-
-
-# @bot.message_handler(commands=['solovki'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_sbor(message)
-
-
-# @bot.message_handler(commands=['timetable'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_timetable(message)
-
-
-# @bot.message_handler(commands=['commanders'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_commanders(message)
-
-
-# @bot.message_handler(commands=['squads'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_squads(message)
-
-
-# @bot.message_handler(commands=['services'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_services(message)
-
-
-# @bot.message_handler(commands=['people'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_people(message)
-
-
-# @bot.message_handler(commands=['other'])
-# def help_command(message):
-#     Tools.log(message=message)
-#     show_other(message)
-
-
-# @bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'other')
-# def other_callback(call):
-#     keyword = call.data.split()[1]
-#     Tools.log(call=call)
-#     if keyword == 'search':
-#         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-#                                       reply_markup=None)
-#         message = send_message(call.message.chat.id,
-#                                text='Введите имя и/или фамилию человека, которого хотите найти. *Лучше вводить только фамилию.*',
-#                                reply_markup=Markup.Exit.people_search_exit)
-#         bot.register_next_step_handler(message, find_people)
-#     elif keyword == 'message':
-#         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-#                                       reply_markup=None)
-#         message = send_message(call.message.chat.id,
-#                                text='Отправьте сообщение, которое хотите передать всему сбору. Это может быть текст, фото, музыка, опрос или файл.',
-#                                reply_markup=Markup.Exit.public_message_exit)
-#         bot.register_next_step_handler(message, public_message)
-#     elif keyword == 'edit':
-#         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-#                                       reply_markup=Markup.Edit.show(call.from_user))
-#     elif keyword == 'admins':
-#         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-#                                       reply_markup=Markup.Admins.show)
-#     bot.answer_callback_query(call.id)
-
-
-# @bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'edit', is_admin=True)
-# def edit_callback(call):
-#     keyword = call.data.split()[1]
-#     Tools.log(call=call)
-#     if keyword == 'timetable':
-#         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-#                                       reply_markup=None)
-#         message = send_message(call.message.chat.id, text='Отправьте фото расписания)',
-#                                reply_markup=Markup.Exit.timetable_edit_exit)
-#         bot.register_next_step_handler(message, edit_timetable, )
-#     elif keyword == 'commanders':
-#         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-#                                       reply_markup=None)
-#         message = send_message(call.message.chat.id,
-#                                text='Отправьте ID ДКС и всех ДКО через пробел. ДКС обязательно первым!',
-#                                reply_markup=Markup.Exit.commander_edit_exit)
-#         bot.register_next_step_handler(message, edit_commanders)
-#     bot.answer_callback_query(call.id)
-
+bot.polling(none_stop=True)
 
 # @bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'admins')
 # def timetable_callback(call):
@@ -601,6 +472,3 @@ def show_appointment(message):
 #             bot.forward_message(user, message.chat.id, message.message_id)
 #         except Exception:
 #             users.remove_user(user)
-
-
-# bot.polling(none_stop=True)

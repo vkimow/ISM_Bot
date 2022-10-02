@@ -1,13 +1,14 @@
+from importlib.resources import path
 from pathlib import Path
 import httplib2
 from googleapiclient import discovery
 from oauth2client.service_account import ServiceAccountCredentials
 
 class SpreadsheetIds:
-    Resource = '1T36DM8mLYkgg7-vYCpEtD_FIP7CKdf61r45UkUE49BI'
+    main = '1T36DM8mLYkgg7-vYCpEtD_FIP7CKdf61r45UkUE49BI'
 
 class BotTokens:
-    Main = '5600845189:AAHnJX5AZl3mKz7V6agQndnVyvYFq6cfjNM'
+    main = '5600845189:AAHnJX5AZl3mKz7V6agQndnVyvYFq6cfjNM'
 
 def create_google_service():
     CREDENTIALS_FILE = 'creds.json'
@@ -21,6 +22,10 @@ def create_google_service():
 
 class Paths:
     resource = 'resource'
+    actions = resource + '/actions'
+    backgrounds = resource + '/backgrounds'
 
 class Resources:
-    action = Paths.resource + '/action.png'
+    action = Paths.actions + '/action.png'
+    def background(name):
+        return f'{Paths.backgrounds}/{name}.jpg'
