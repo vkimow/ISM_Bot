@@ -4,13 +4,15 @@ import telebot
 import config
 
 from telebot import types
-from config import create_google_service, Resources, SpreadsheetIds
+from config import Resources, SpreadsheetIds
 from markup import Markup
+from google_service_creator import create_google_drive_service, create_google_sheet_service
 from massage_parser import parse
 
 bot = telebot.TeleBot(config.BotTokens.main)
-service = create_google_service()
-massage = parse(service, SpreadsheetIds.main)
+sheet_service = create_google_sheet_service()
+drive_service = create_google_drive_service()
+massage = parse(sheet_service, SpreadsheetIds.main)
 
 def send_message(id, photo_path=None, photo=None, text=None, reply_markup=None, parse_mode='Markdown'):
     if photo:
@@ -103,7 +105,6 @@ def anatomy_callback(call):
     bot.answer_callback_query(call.id)
 
 bot.polling(none_stop=True)
-
 # @bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'admins')
 # def timetable_callback(call):
 #     keyword = call.data.split()[1]

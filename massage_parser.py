@@ -54,4 +54,5 @@ def parse(service, spreadsheetId):
     lectures = parse_lectures(get_sheet('Лекции', 'A', 'B', '2'))
     anatomy = parse_anatomy(get_sheet('Анатомия', 'A', 'B', '2'))
 
+    Parser.download_google_drive_file(service, '1FMNSWxcgmb34me6IlUqyaFM9C2BEHaNK', 'resource/specialists', 'spec.jpg')
     return Massage(specialists, lectures, anatomy)

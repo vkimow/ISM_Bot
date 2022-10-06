@@ -1,3 +1,7 @@
+import io
+import os
+from turtle import down
+from googleapiclient.http import MediaIoBaseDownload
 class Parser:
     @staticmethod
     def get_google_sheet(service, spreadsheet_id, sheet_name, start_col = '', end_col = '', start_row = '', end_row = ''):
@@ -27,6 +31,25 @@ class Parser:
         range = f"{sheet_name}!{start_col}{start_row}:{end_col}{end_row}"
         body = {}
         service.spreadsheets().values().clear(spreadsheetId=spreadsheet_id, range=range, body=body).execute()
+
+    @staticmethod
+    def download_google_drive_file(service, file_id, path, name):
+        request = service.files().get_media(fileid = file_id)
+        fh = io.BytesIO
+        downloader = MediaIoBaseDownload(fd=fh, request=request)
+
+        done = False
+
+        while not done:
+            status, done = downloader.next_chunk()
+            print('Download progress: {}'.format(status.progress() * 100))
+
+        fh.seek(0)
+
+        with open(os.path.join(path, name), 'wb') as f:
+            f.write(fh.read())
+            f.close()
+
 
     @staticmethod
     def get_row(google_sheet, row):
