@@ -7,12 +7,12 @@ from telebot import types
 from config import Resources, SpreadsheetIds
 from markup import Markup
 from google_service_creator import create_google_drive_service, create_google_sheet_service
+from google_service_container import GoogleServices
 from massage_parser import parse
 
 bot = telebot.TeleBot(config.BotTokens.main)
-sheet_service = create_google_sheet_service()
-drive_service = create_google_drive_service()
-massage = parse(sheet_service, SpreadsheetIds.main)
+google_services = GoogleServices(create_google_drive_service(), create_google_sheet_service())
+massage = parse(google_services, SpreadsheetIds.main)
 
 def send_message(id, photo_path=None, photo=None, text=None, reply_markup=None, parse_mode='Markdown'):
     if photo:

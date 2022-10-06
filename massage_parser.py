@@ -1,7 +1,8 @@
 from google_sheet_parser import Parser
 from massage import Massage, Specialist, Lecture, Anatomy
 
-def parse(service, spreadsheetId):
+def parse(services, spreadsheetId):
+
     def parse_specialists(sheet):
         result = []
         name_col = 0
@@ -47,12 +48,12 @@ def parse(service, spreadsheetId):
         return result
 
     def get_sheet(name, start_col = '', end_col = '', start_row = '', end_row = ''):
-        google_sheet = Parser.get_google_sheet(service, spreadsheetId, name, start_col, end_col, start_row, end_row)
+        google_sheet = Parser.get_google_sheet(services.sheet, spreadsheetId, name, start_col, end_col, start_row, end_row)
         return google_sheet['values']
 
     specialists = parse_specialists(get_sheet('Специалисты', 'A', 'C', '2'))
     lectures = parse_lectures(get_sheet('Лекции', 'A', 'B', '2'))
     anatomy = parse_anatomy(get_sheet('Анатомия', 'A', 'B', '2'))
 
-    Parser.download_google_drive_file(service, '1FMNSWxcgmb34me6IlUqyaFM9C2BEHaNK', 'resource/specialists', 'spec.jpg')
+    Parser.download_google_drive_file(services.drive, '1FMNSWxcgmb34me6IlUqyaFM9C2BEHaNK', 'resource/specialists', 'spec.jpg')
     return Massage(specialists, lectures, anatomy)
