@@ -1,4 +1,4 @@
-appointment
-actions
-lectures
-anatomy
+appointment - Записаться к специалисту
+actions - Акции
+lectures - Лекции
+anatomy - Анатомия человека
