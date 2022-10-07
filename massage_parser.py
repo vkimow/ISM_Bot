@@ -1,5 +1,5 @@
 from google_parser import Parser
-from google_download import Downloadable, get_drive_id_from_url
+from google_download import Downloadable
 from massage import Massage, Specialist, Lecture, Anatomy
 from config import Paths
 

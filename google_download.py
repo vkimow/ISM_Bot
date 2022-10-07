@@ -1,7 +1,5 @@
-from distutils import extension
 from enum import IntEnum
 import io
-import os
 from urllib.parse import urlparse
 from googleapiclient.http import MediaIoBaseDownload
 

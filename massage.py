@@ -1,4 +1,3 @@
-from distutils import extension
 from config import Paths
 
 class Massage:

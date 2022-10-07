@@ -1,6 +1,3 @@
-from asyncore import write
-from genericpath import isfile
-import imp
 import telebot
 import config
 import os

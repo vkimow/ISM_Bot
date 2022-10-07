@@ -1,9 +1,3 @@
-from importlib.resources import path
-from pathlib import Path
-import httplib2
-from googleapiclient import discovery
-from oauth2client.service_account import ServiceAccountCredentials
-
 class SpreadsheetIds:
     main = '1T36DM8mLYkgg7-vYCpEtD_FIP7CKdf61r45UkUE49BI'
 
