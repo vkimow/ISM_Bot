@@ -1,4 +1,4 @@
 class GoogleServices:
     def __init__(self, drive, sheets):
-        drive = drive
-        sheets = sheets
+        self.drive = drive
+        self.sheets = sheets

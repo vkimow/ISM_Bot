@@ -1,0 +1,4 @@
+appointment
+actions
+lectures
+anatomy

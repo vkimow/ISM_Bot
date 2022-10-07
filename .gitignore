@@ -166,4 +166,8 @@ cython_debug/
 # Excel
 ~$*.xlsx
 
+# Resources
+resource
+resources
+
 # Custom

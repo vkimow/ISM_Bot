@@ -14,8 +14,16 @@ class Paths:
     resource = 'resource'
     actions = resource + '/actions'
     backgrounds = resource + '/backgrounds'
+    specialists = resource + '/specialists'
+    anatomy = resource + '/anatomy'
 
 class Resources:
-    action = Paths.actions + '/action.png'
-    def background(name):
-        return f'{Paths.backgrounds}/{name}.jpg'
+    class Photos:
+        def background(name):
+            return f'{Paths.backgrounds}/{name}.jpg'
+        def organ(name):
+            return f'{Paths.anatomy}/{name}.jpg'
+        def specialist(name):
+            return f'{Paths.specialists}/{name}.jpg'
+        def action(name_with_extension):
+            return f'{Paths.actions}/{name_with_extension}'
