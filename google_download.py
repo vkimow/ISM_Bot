@@ -3,7 +3,6 @@ import io
 from urllib.parse import urlparse
 from googleapiclient.http import MediaIoBaseDownload
 
-@staticmethod
 def download_google_drive_file(service, file_id, full_path):
     request = service.files().get_media(fileId = file_id)
     fh = io.BytesIO()
@@ -20,7 +19,6 @@ def download_google_drive_file(service, file_id, full_path):
         f.write(fh.read())
         f.close()
 
-@staticmethod
 def get_drive_id_from_url(drive_url):
     splited = drive_url.split('/')
     return splited[5]
