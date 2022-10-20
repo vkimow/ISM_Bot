@@ -1,4 +1,3 @@
-appointment - Записаться к специалисту
-actions - Акции
-lectures - Лекции
-anatomy - Анатомия человека
+about - О нас
+services - Услуги
+education - Обучение

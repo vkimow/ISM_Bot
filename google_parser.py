@@ -1,23 +1,29 @@
 
 class Parser:
     @staticmethod
-    def get_google_sheet(service, spreadsheet_id, sheet_name, start_col = '', end_col = '', start_row = '', end_row = ''):
+    def get_google_sheets(service, spreadsheet_id):
+        sheet_metadata = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+        return sheet_metadata.get('sheets')
+
+
+    @staticmethod
+    def get_google_sheet(service, spreadsheet_id, sheet_name, start_col = '', end_col = '', start_row = '', end_row = '', major_dimension = 'ROWS'):
         range = f"{sheet_name}!{start_col}{start_row}:{end_col}{end_row}"
         return service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
             range=range,
-            majorDimension='ROWS'
+            majorDimension=major_dimension
         ).execute()
 
     @staticmethod
-    def set_google_sheet(service, spreadsheet_id, sheet_name, values, start_col = '', end_col = '', start_row = '', end_row = ''):
+    def set_google_sheet(service, spreadsheet_id, sheet_name, values, start_col = '', end_col = '', start_row = '', end_row = '', major_dimension = 'ROWS'):
         service.spreadsheets().values().batchUpdate(
             spreadsheetId=spreadsheet_id,
             body={
                 "valueInputOption": "USER_ENTERED",
                 "data": [
                     {"range": f"{sheet_name}!{start_col}{start_row}:{end_col}{end_row}",
-                    "majorDimension": "ROWS",
+                    "majorDimension": major_dimension,
                     "values": values}
                 ]
             }

@@ -1,10 +1,9 @@
 from config import Paths
 
 class Massage:
-    def __init__(self, specialists, lectures, anatomy):
+    def __init__(self, specialists, services):
         self.specialists = specialists
-        self.lectures = lectures
-        self.anatomy = anatomy
+        self.services = services
 
 class Specialist:
     def __init__(self, name, surname, description, appointment_link):
@@ -23,13 +22,7 @@ class Specialist:
         return f'*{self.get_full_name()}*\n'\
                 f'{self.description}'
 
-class Lecture:
+class Service:
     def __init__(self, name, link):
         self.name = name
         self.link = link
-
-class Anatomy:
-    def __init__(self, name, content, info_link):
-        self.name = name
-        self.content = content
-        self.info_link = info_link if info_link else None
