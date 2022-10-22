@@ -1,6 +1,8 @@
 from classes.bot import Bot
 import telebot
+from classes.users import User
 import config
+import asyncio
 import os
 
 from telebot import types
@@ -45,10 +47,16 @@ def show_education(message):
 def show_help(message):
     return
 
+async def add_user(user_id):
+    user = User(user_id)
+    async with bot.data.user_data.external_users_lock:
+        if await bot.data.user_data.try_add_user(user):
+            print('Юзер добавлен!')
+
 
 @bot.telegram_bot.message_handler(commands=['start'])
 def start_command(message):
-    return
+    asyncio.run(add_user(message.from_user.id))
 
 @bot.telegram_bot.message_handler(commands=['help'])
 def help_command(message):
