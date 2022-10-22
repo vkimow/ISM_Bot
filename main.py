@@ -26,7 +26,7 @@ def show_actions(message):
             bot.send_message(message.chat.id, photo_path=Resources.Photos.action(file))
 
 def show_appointment(message):
-    bot.send_message(message.chat.id, text = 'Выберите одного из специалистов', photo_path=Resources.Photos.background('Appointment'), reply_markup=Markup.Appointment.main(massage.specialists))
+    bot.send_message(message.chat.id, text = 'Выберите одного из специалистов', photo_path=Resources.Photos.background('Appointment'), reply_markup=Markup.Appointment.main(bot.data.massage.specialists))
 
 def show_specialist(message, specialist):
     bot.send_message(message.chat.id, text=specialist.get_full_description(), photo_path=specialist.get_photo_path(), reply_markup = Markup.Appointment.specialist(specialist))
@@ -80,15 +80,6 @@ def specialist_callback(call):
     if keyword == 'back':
         show_appointment(call.message)
         bot.delete_message(call.message)
-    bot.answer_callback_query(call.id)
-
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'organ')
-def anatomy_callback(call):
-    keyword = call.data.split()[1]
-    if keyword == 'back':
-        show_anatomy(call.message)
-        bot.delete_message(call.message)
-
     bot.answer_callback_query(call.id)
 
 bot.telegram_bot.polling(none_stop=True)
