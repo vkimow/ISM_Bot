@@ -6,6 +6,27 @@ class Markup:
     class Main:
         show = types.ReplyKeyboardRemove()
 
+    class About:
+        def main(links):
+            result = types.InlineKeyboardMarkup(row_width = 1)
+            map = types.InlineKeyboardButton(text = 'Открыть на карте', callback_data='about maps')
+            vk = types.InlineKeyboardButton(text = 'Группа Вконтакте', url = links.vk_group)
+            website = types.InlineKeyboardButton(text = 'Наш сайт', url = links.website)
+
+            result.add(map, vk, website)
+            return result
+
+        def maps(links):
+            result = types.InlineKeyboardMarkup(row_width = 1)
+            map_2gis = types.InlineKeyboardButton(text = 'Открыть в 2GIS', url = links.map.gis)
+            map_yandex = types.InlineKeyboardButton(text = 'Открыть в Яндекс Картах', url = links.map.yandex)
+            map_google = types.InlineKeyboardButton(text = 'Открыть в Google Картах', url = links.map.google)
+            back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='about main')
+
+            result.add(map_2gis, map_yandex, map_google, back)
+            return result
+
+
     class Services:
         def main():
             result = types.InlineKeyboardMarkup(row_width = 1)
@@ -15,18 +36,28 @@ class Markup:
             result.add(actions, specialist, all_services)
             return result
 
-    class Specialist:
-        def list(specialists):
+        def services_list(services):
+            result = types.InlineKeyboardMarkup(row_width = 1)
+            for service in services:
+                button = types.InlineKeyboardButton(text = service.name, url = service.link)
+                result.add(button)
+
+            back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='services main')
+            result.add(back)
+            return result
+
+        def specialists_list(specialists):
             result = types.InlineKeyboardMarkup(row_width = 1)
 
             for i in range(len(specialists)):
-                button = types.InlineKeyboardButton(text = specialists[i].get_full_name(), callback_data=f'specialist appointment {i}')
+                button = types.InlineKeyboardButton(text = specialists[i].get_full_name(), callback_data=f'specialist concrete {i}')
                 result.add(button)
 
-            cancel = types.InlineKeyboardButton(text = 'Отмена записи', callback_data='appointment cancel')
+            cancel = types.InlineKeyboardButton(text = 'Вернуться', callback_data='services main')
             result.add(cancel)
             return result
 
+    class Specialist:
         def concrete(specialist):
             result = types.InlineKeyboardMarkup(row_width = 1)
             appointment = types.InlineKeyboardButton(text = 'Записаться', url = specialist.appointment_link)
@@ -35,56 +66,28 @@ class Markup:
             return result
 
     class Education:
-        def main(programmes):
+        def main(courses, links):
             result = types.InlineKeyboardMarkup(row_width = 1)
 
-            for program in programmes:
-                button = types.InlineKeyboardButton(text = program.name, callback_data=f'education program {program.name}')
+            for i in range(len(courses)):
+                button = types.InlineKeyboardButton(text = courses[i].name, callback_data=f'education course {i}')
                 result.add(button)
 
-
+            education = types.InlineKeyboardButton(text = 'Записаться на обучение', url = links.education)
+            result.add(education)
             return result
 
-        def program(program):
+        def course(course):
             result = types.InlineKeyboardMarkup(row_width = 1)
 
-            for lesson in program.lessons:
-                button = types.InlineKeyboardButton(text = lesson.name, url = lesson.url)
+            for lesson in course.lessons:
+                button = types.InlineKeyboardButton(text = lesson.name, url = lesson.link)
                 result.add(button)
+
+            if course.link:
+                appointment = types.InlineKeyboardButton(text = 'Записаться', url = course.link)
+                result.add(appointment)
 
             back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='education main')
             result.add(back)
             return result
-
-
-    class Lectures:
-        def main(lectures):
-            result = types.InlineKeyboardMarkup(row_width = 1)
-
-            for lecture in lectures:
-                button = types.InlineKeyboardButton(text = lecture.name, url = lecture.link)
-                result.add(button)
-
-            return result
-
-    class Anatomy:
-        def main(anatomy):
-            result = types.InlineKeyboardMarkup(row_width = 1)
-
-            for name in anatomy:
-                button = types.InlineKeyboardButton(text = name, callback_data=f'anatomy organ {name}')
-                result.add(button)
-
-            return result
-
-        def organ(organ):
-            result = types.InlineKeyboardMarkup(row_width = 1)
-
-            if(organ.info_link):
-                info = types.InlineKeyboardButton(text = 'Подробнее', url = organ.info_link)
-                result.add(info)
-
-            back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='organ back')
-            result.add(back)
-            return result
-    
