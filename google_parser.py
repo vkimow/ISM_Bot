@@ -1,7 +1,7 @@
 
 class Parser:
     @staticmethod
-    def get_google_sheets(service, spreadsheet_id):
+    def get_google_sheets_properties(service, spreadsheet_id):
         sheet_metadata = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
         return sheet_metadata.get('sheets')
 

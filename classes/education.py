@@ -7,10 +7,17 @@ class Lesson:
         self.numbers = numbers
 
 class Course:
-    def __init__(self, name, lessons):
+    def __init__(self, name, description, link, lessons):
         self.name = name
+        self.description = description
+        self.link = link
         self.lessons = lessons
         self.numbers = set()
 
         for lesson in self.lessons:
-            self.numbers.union(lessons.numbers)
+            self.numbers.union(lesson.numbers)
+
+    def get_text(self):
+        result = f'*{self.name}*\n'
+        result += f'{self.description}'
+        return result
