@@ -8,6 +8,7 @@ class SpreadsheetIds:
 
 class BotTokens:
     main = '5600845189:AAHnJX5AZl3mKz7V6agQndnVyvYFq6cfjNM'
+    test = '5428034932:AAGBjzKvAiM8dZ205GEOY9yM1wWu2FZrfYo'
 
 class Paths:
     resource = 'resource'
