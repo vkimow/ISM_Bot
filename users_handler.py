@@ -4,7 +4,7 @@ class UsersHandler:
         self.__users_db_handler = users_db_handler
 
     def set_user(self, user):
-        self.__users[user.user_id] = user
+        self.__users[user.id] = user
         self.__users_db_handler.add_or_update_user(user)
         return True
 
@@ -23,6 +23,9 @@ class UsersHandler:
         del self.__users[user_id]
         self.__users_db_handler.try_delete_user(user_id)
         return True
+
+    def get_user(self, user_id):
+        return self.__users[user_id] if user_id in self.__users else None
 
     def get_users(self):
         return self.__users

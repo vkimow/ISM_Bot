@@ -91,3 +91,6 @@ class Bot:
 
     def answer_callback_query(self, call_id):
         return self.telegram_bot.answer_callback_query(call_id)
+
+    def register_next_step_handler(self, message, step):
+        self.telegram_bot.register_next_step_handler(message, step)

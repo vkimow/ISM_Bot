@@ -15,7 +15,7 @@ class Course:
         self.numbers = set()
 
         for lesson in self.lessons:
-            self.numbers.union(lesson.numbers)
+            self.numbers.update(lesson.numbers)
 
     def get_text(self):
         result = f'*{self.name}*\n'

@@ -68,9 +68,18 @@ class UsersDataBaseHandler:
 
     def get_all_users(self):
         users = {}
+
+        def get_none_if_string_none(string):
+            return string if string != 'None' else None
+
         for [user_id, first_name, last_name, phone_number] in self.__sql.execute(f'SELECT * FROM users'):
             if user_id in users:
                 continue
+
+            first_name = get_none_if_string_none(first_name)
+            last_name = get_none_if_string_none(last_name)
+            phone_number = get_none_if_string_none(phone_number)
+
             user = User(user_id, first_name, last_name, phone_number)
             users[user_id] = user
 
