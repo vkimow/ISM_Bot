@@ -1,18 +1,20 @@
-from classes.users import UserData
 import telebot
 
 from telebot import types
 from config import Paths, Resources, SpreadsheetIds
 from massage_parser import MassageParser
 from massage_downloader import MassageDownloader
+from users_db_handler import UsersDataBaseHandler
+from users_handler import UsersHandler
 
 class BotData:
-    def __init__(self, about, links, massage, courses, user_data):
+    def __init__(self, about, links, massage, courses, admins, users_handler):
         self.about = about
         self.links = links
         self.massage = massage
         self.courses = courses
-        self.user_data = user_data
+        self.admins = admins
+        self.users_handler = users_handler
 
 class Bot:
     def __init__(self, telegram_bot, google_services, data):
@@ -28,10 +30,12 @@ class Bot:
         massage, massage_files_to_download = massage_parser.parse_massage(SpreadsheetIds.services)
         courses = massage_parser.parse_education(SpreadsheetIds.education)
         admins = massage_parser.parse_admins(SpreadsheetIds.admins)
-        users = massage_parser.parse_users(SpreadsheetIds.users)
 
-        user_data = UserData(admins, users)
-        data = BotData(about, links, massage, courses, user_data)
+        users_db_handler = UsersDataBaseHandler()
+        users = users_db_handler.get_all_users()
+        users_handler = UsersHandler(users, users_db_handler)
+
+        data = BotData(about, links, massage, courses, admins, users_handler)
         self.data = data
 
         files_to_download = info_files_to_download + massage_files_to_download
