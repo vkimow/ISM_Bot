@@ -6,6 +6,15 @@ class Markup:
     class Main:
         show = types.ReplyKeyboardRemove()
 
+    class GetContact:
+        def main():
+            result = types.ReplyKeyboardMarkup(row_width = 1)
+            send_phone_number = types.KeyboardButton(text = 'Отправить номер', request_contact = True)
+            cancel = types.KeyboardButton(text = 'Отмена')
+
+            result.add(send_phone_number, cancel)
+            return result
+
     class About:
         def main(links):
             result = types.InlineKeyboardMarkup(row_width = 1)
@@ -77,10 +86,10 @@ class Markup:
             result.add(education)
             return result
 
-        def course(course):
+        def course(course, lessons):
             result = types.InlineKeyboardMarkup(row_width = 1)
 
-            for lesson in course.lessons:
+            for lesson in lessons:
                 button = types.InlineKeyboardButton(text = lesson.name, url = lesson.link)
                 result.add(button)
 

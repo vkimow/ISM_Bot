@@ -219,7 +219,7 @@ class MassageParser:
 
     def parse_users(self, spreadsheet_id):
         def parse_main(sheet):
-            result = []
+            result = dict()
             user_id_col = 0
             name_col = 0
             number_col = 0
@@ -231,9 +231,12 @@ class MassageParser:
                 user_id = row[user_id_col]
                 name = row[name_col]
                 number = row[number_col]
-
                 user = User(user_id, name, number)
-                result.append(user)
+
+                if user_id in result:
+                    continue
+
+                result[user_id] = user
 
             return result
 
