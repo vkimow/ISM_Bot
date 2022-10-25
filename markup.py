@@ -6,6 +6,15 @@ class Markup:
     class Main:
         show = types.ReplyKeyboardRemove()
 
+    class Admin:
+        def main():
+            result = types.InlineKeyboardMarkup(row_width = 1)
+            download = types.InlineKeyboardButton(text = 'Загрузить инфомрацию', callback_data='admin download')
+            forward_message = types.InlineKeyboardButton(text = 'Распространить сообщение', callback_data='admin message')
+
+            result.add(download, forward_message)
+            return result
+
     class GetContact:
         def main():
             result = types.ReplyKeyboardMarkup(row_width = 1)

@@ -36,12 +36,17 @@ def show_education(chat_id, user_id):
     text = 'Вы еще не проходили обучение. Запишитесь и вам откроется доступ к материалам!' if len(courses) == 0 else ''
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Education'), text= text, reply_markup=Markup.Education.main(courses, bot.data.links))
 
-def request_phone_number(chat_id):
+def show_help(chat_id):
+    return
+
+def show_admin(chat_id):
+    return
+
+def show_request_phone_number(chat_id):
     message = bot.send_message(chat_id, text='Для доступа к обущающим матераиалам поделитесь своим номером', reply_markup=Markup.GetContact.main())
     bot.register_next_step_handler(message, get_contact)
 
-def show_help(chat_id):
-    return
+
 
 def add_user(user_id):
     user = User(user_id)
@@ -70,11 +75,9 @@ def start_command(message):
 def help_command(message):
     show_help(message.chat.id)
 
-@bot.telegram_bot.message_handler(commands=['resetup'])
-def resetup_command(message):
+@bot.telegram_bot.message_handler(commands=['admin'])
+def admin_command(message):
     bot.setup()
-    bot.send_message(message.chat.id, text = 'Загрузка закончилась')
-
 
 @bot.telegram_bot.message_handler(commands=['about'])
 def about_command(message):
@@ -89,7 +92,7 @@ def education_command(message):
     if(user_has_number(message.from_user.id)):
         show_education(message.chat.id, message.from_user.id)
     else:
-        request_phone_number(message.chat.id)
+        show_request_phone_number(message.chat.id)
 
 
 @bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'about')
@@ -149,19 +152,25 @@ def specialist_callback(call):
     bot.answer_callback_query(call.id)
 
 
+@bot.message_handler(content_types=["text"])
+def message_handler(message):
+    bot.send_message(message.chat.id, text = 'Этот бот не распознает текст. Используйте комманды, чтобы воспользоваться доступными функциями.', reply_markup=Markup.remove)
+
+
 def get_contact(message):
     if message.text and message.text == "Отмена":
         bot.send_message(message.chat.id, text = 'Отмена перехода в раздел обучения',reply_markup=Markup.remove)
         return
 
     if not message.contact:
-        request_phone_number(message.chat.id)
+        show_request_phone_number(message.chat.id)
         return
 
     contact = message.contact
     user = User(id=message.from_user.id, first_name=contact.first_name, last_name=contact.last_name, phone_number=contact.phone_number)
     bot.data.users_handler.set_user(user)
     bot.send_message(message.chat.id, text = 'Информация получена! Теперь у вас есть доступ к разделу обучение',reply_markup=Markup.remove)
+
 
 
 bot.telegram_bot.polling(none_stop=True)
