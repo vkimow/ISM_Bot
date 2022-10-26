@@ -41,12 +41,12 @@ class Bot:
         files_to_download = info_files_to_download + massage_files_to_download
         massage_downloader.load(files_to_download)
 
-    def send_message(self, id, photo_path=None, text=None, reply_markup=None, parse_mode='Markdown'):
+    def send_message(self, id, photo_path=None, text=None, reply_markup=None, reply_to_message_id = None, parse_mode='Markdown'):
         if photo_path:
             with open(photo_path, 'rb') as photo:
-                return self.telegram_bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, parse_mode=parse_mode)
+                return self.telegram_bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id, parse_mode=parse_mode)
         else:
-            return self.telegram_bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, parse_mode=parse_mode)
+            return self.telegram_bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id, parse_mode=parse_mode)
 
     def edit_text(self, message, text=None, reply_markup=None, parse_mode='Markdown'):
         if message.photo:

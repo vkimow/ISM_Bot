@@ -40,12 +40,12 @@ def show_help(chat_id):
     return
 
 def show_admin(chat_id):
+    bot.send_message(chat_id, photo_path=Resources.Photos.background('Admin'), reply_markup=Markup.Admin.main())
     return
 
 def show_request_phone_number(chat_id):
     message = bot.send_message(chat_id, text='Для доступа к обущающим матераиалам поделитесь своим номером', reply_markup=Markup.GetContact.main())
     bot.register_next_step_handler(message, get_contact)
-
 
 
 def add_user(user_id):
@@ -77,7 +77,7 @@ def help_command(message):
 
 @bot.telegram_bot.message_handler(commands=['admin'])
 def admin_command(message):
-    bot.setup()
+    show_admin(message.chat.id)
 
 @bot.telegram_bot.message_handler(commands=['about'])
 def about_command(message):
@@ -152,7 +152,41 @@ def specialist_callback(call):
     bot.answer_callback_query(call.id)
 
 
-@bot.message_handler(content_types=["text"])
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'admin')
+def admin_callback(call):
+    keyword = call.data.split()[1]
+    if keyword == 'main':
+        bot.edit_message(call.message, text = '', reply_markup=Markup.Admin.main())
+    elif keyword == 'refresh':
+        bot.edit_reply_markup(call.message, reply_markup=Markup.Admin.refresh())
+    elif keyword == 'forward':
+        bot.edit_reply_markup(call.message, reply_markup=None)
+        message = bot.send_message(call.message.chat.id, text='Отправьте сообщение, которым хотите поделиться')
+        bot.register_next_step_handler(message, request_to_forward_message)
+    bot.answer_callback_query(call.id)
+
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'refresh')
+def refresh_callback(call):
+    keyword = call.data.split()[1]
+    if keyword == 'all':
+        bot.edit_message(call.message, text='Вся информация успешно обновлена!')
+    elif keyword == 'admins':
+        bot.edit_message(call.message, text='Список админов успешно обновлен!')
+    bot.answer_callback_query(call.id)
+
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'forward')
+def forward_callback(call):
+    keyword = call.data.split()[1]
+    if keyword == 'accept':
+        bot.edit_reply_markup(call.message, reply_markup=None)
+        forward_message_to_all(call.message.reply_to_message)
+        bot.edit_message(call.message, text = 'Сообщение успешно отправлено!')
+    elif keyword == 'cancel':
+        bot.edit_message(call.message, text= 'Отправка сообщения отменена!',  reply_markup=None)
+    bot.answer_callback_query(call.id)
+
+
+@bot.telegram_bot.message_handler(content_types=["text"])
 def message_handler(message):
     bot.send_message(message.chat.id, text = 'Этот бот не распознает текст. Используйте комманды, чтобы воспользоваться доступными функциями.', reply_markup=Markup.remove)
 
@@ -171,6 +205,22 @@ def get_contact(message):
     bot.data.users_handler.set_user(user)
     bot.send_message(message.chat.id, text = 'Информация получена! Теперь у вас есть доступ к разделу обучение',reply_markup=Markup.remove)
 
+def request_to_forward_message(message):
+    if message.text == 'Выход из режима публикации сообщения' or message.text == 'Отмена':
+        bot.send_message(message.chat.id, text='Отмена публикации сообщения', reply_markup=Markup.remove)
+        return
+
+    bot.send_message(message.chat.id, text = 'Сообщение получено!', reply_markup=Markup.remove)
+    bot.send_message(message.chat.id, text = 'Вы уверены, что хотите *ОТПРАВИТЬ ВСЕМ* это сообщение? Отправку нельзя отменить.', reply_to_message_id=message.message_id, reply_markup=Markup.Admin.forward())
+
+def forward_message_to_all(message):
+    for user_id in bot.data.users_handler.get_users():
+        if user_id == message.chat.id:
+            continue
+        try:
+            bot.forward_message(user_id, message.chat.id, message.message_id)
+        except Exception:
+            continue
 
 
 bot.telegram_bot.polling(none_stop=True)

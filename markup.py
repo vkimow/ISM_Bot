@@ -9,10 +9,27 @@ class Markup:
     class Admin:
         def main():
             result = types.InlineKeyboardMarkup(row_width = 1)
-            download = types.InlineKeyboardButton(text = 'Загрузить инфомрацию', callback_data='admin download')
-            forward_message = types.InlineKeyboardButton(text = 'Распространить сообщение', callback_data='admin message')
+            refresh = types.InlineKeyboardButton(text = 'Обновить инфомрацию', callback_data='admin refresh')
+            forward_message = types.InlineKeyboardButton(text = 'Распространить сообщение', callback_data='admin forward')
 
-            result.add(download, forward_message)
+            result.add(refresh, forward_message)
+            return result
+
+        def refresh():
+            result = types.InlineKeyboardMarkup(row_width = 1)
+            all = types.InlineKeyboardButton(text = 'Обновить все', callback_data='refresh all')
+            admins = types.InlineKeyboardButton(text = 'Обновить список админов', callback_data='refresh admins')
+            back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='admin main')
+
+            result.add(all, admins, back)
+            return result
+
+        def forward():
+            result = types.InlineKeyboardMarkup(row_width = 2)
+            accept = types.InlineKeyboardButton(text = 'Отправить', callback_data='forward accept')
+            cancel = types.InlineKeyboardButton(text = 'Отмена', callback_data='forward cancel')
+
+            result.add(accept, cancel)
             return result
 
     class GetContact:
