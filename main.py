@@ -12,7 +12,7 @@ from google.google_service_creator import create_google_drive_service, create_go
 from google.google_service_container import GoogleServices
 
 
-bot = Bot(  telegram_bot = telebot.TeleBot(config.BotTokens.test),
+bot = Bot(  telegram_bot = telebot.TeleBot(config.BotTokens.main),
             google_services = GoogleServices(create_google_drive_service(), create_google_sheet_service()),
             data = None)
 
