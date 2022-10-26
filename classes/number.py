@@ -7,6 +7,8 @@ class Number:
         if not isinstance(number, str):
             return None
 
+        number = number.strip()
+
         if len(number) == 12 and number.startswith('+'):
             number = number[1:]
 

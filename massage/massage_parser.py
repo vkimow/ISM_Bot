@@ -1,10 +1,10 @@
 from classes.info import AboutUs, Paragraph, Links, MapLinks
-from google_parser import Parser
-from google_download import Downloadable
+from google.google_parser import Parser
+from google.google_download import Downloadable
 from classes.services import Service, Specialist, Massage
 from classes.education import Lesson, Course
 from config import Paths
-from classes.users import Admin, User
+from classes.users import Admins, User
 from classes.number import Number
 
 
@@ -200,24 +200,27 @@ class MassageParser:
 
     def parse_admins(self, spreadsheet_id):
         def parse_main(sheet):
-            result = {}
+            telegrams = set()
+            phone_numbers = set()
             telegram_col = 0
+            phone_number_col = 0
 
             for row in sheet:
                 telegram = row[telegram_col]
-                admin = Admin(telegram)
+                phone_number = row[phone_number_col]
 
-                if telegram in result:
-                    continue
+                if telegram:
+                    telegrams.add(telegram)
+                if phone_number:
+                    phone_numbers.add(phone_number)
 
-                result[telegram] = admin
-
-            return result
+            admins = Admins(telegrams, phone_numbers)
+            return admins
 
         def get_sheet(name, start_col = '', end_col = '', start_row = ''):
             return self.__get_sheet(spreadsheet_id, name, start_col, end_col, start_row)
 
-        admins = parse_main(get_sheet('Админы', 'A', 'A', '2'))
+        admins = parse_main(get_sheet('Админы', 'A', 'B', '2'))
         return admins
 
 

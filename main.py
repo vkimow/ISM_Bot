@@ -8,8 +8,8 @@ import os
 from telebot import types
 from config import Paths, Resources
 from markup import Markup
-from google_service_creator import create_google_drive_service, create_google_sheet_service
-from google_service_container import GoogleServices
+from google.google_service_creator import create_google_drive_service, create_google_sheet_service
+from google.google_service_container import GoogleServices
 
 
 bot = Bot(  telegram_bot = telebot.TeleBot(config.BotTokens.main),
@@ -30,8 +30,8 @@ def show_about(chat_id):
 def show_services(chat_id):
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Services'), reply_markup=Markup.Services.main())
 
-def show_education(chat_id, user_id):
-    phone_number = get_user_number(user_id)
+def show_education(chat_id, telegram_user):
+    phone_number = get_user_number(telegram_user)
     courses = list(filter(lambda course: phone_number in course.numbers, bot.data.courses))
     text = 'Вы еще не проходили обучение. Запишитесь и вам откроется доступ к материалам!' if len(courses) == 0 else ''
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Education'), text= text, reply_markup=Markup.Education.main(courses, bot.data.links))
@@ -55,10 +55,10 @@ def show_help(chat_id, user):
     bot.send_message(chat_id, text=help_text)
     return
 
-def user_has_number(user_id):
-    user = bot.data.users_handler.get_user(user_id)
+def user_has_number(telegram_user):
+    user = bot.data.users_handler.get_user(telegram_user.user_id)
     if not user:
-        user = User(user_id)
+        user = User(telegram_user.id, username = telegram_user.username, first_name = telegram_user.first_name, last_name = telegram_user.last_name)
         bot.data.users_handler.try_add_user(user)
         return False
 
@@ -67,13 +67,14 @@ def user_has_number(user_id):
 
     return True
 
-def get_user_number(user_id):
-    user = bot.data.users_handler.get_user(user_id)
+def get_user_number(telegram_user):
+    user = bot.data.users_handler.get_user(telegram_user.id)
     return user.phone_number
 
 @bot.telegram_bot.message_handler(commands=['start'], is_active=True)
 def start_command(message):
-    user = User(message.from_user.id)
+    telegram_user = message.from_user
+    user = User(telegram_user.id, username = telegram_user.username, first_name = telegram_user.first_name, last_name = telegram_user.last_name)
     if bot.data.users_handler.try_add_user(user):
         bot.send_message('Добро пожаловать!')
         show_help(message.chat.id, message.from_user)
@@ -97,8 +98,8 @@ def appointment_command(message):
 
 @bot.telegram_bot.message_handler(commands=['education'], is_active=True)
 def education_command(message):
-    if(user_has_number(message.from_user.id)):
-        show_education(message.chat.id, message.from_user.id)
+    if(user_has_number(message.from_user)):
+        show_education(message.chat.id, message.from_user)
     else:
         show_request_phone_number(message.chat.id)
 
@@ -134,12 +135,12 @@ def services_callback(call):
 def education_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
-        phone_number = get_user_number(call.from_user.id)
+        phone_number = get_user_number(call.from_user)
         courses = list(filter(lambda course: phone_number in course.numbers, bot.data.courses))
         text = 'Вы еще не проходили обучение. Запишитесь и вам откроется доступ к материалам!' if len(courses) == 0 else ''
         bot.edit_text(call.message, text=text, reply_markup = Markup.Education.main(courses, bot.data.links))
     elif keyword == 'course':
-        phone_number = get_user_number(call.from_user.id)
+        phone_number = get_user_number(call.from_user)
         index = int(call.data.split()[2])
         course = bot.data.courses[index]
         lessons = list(filter(lambda lesson: phone_number in lesson.numbers, course.lessons))
@@ -212,7 +213,8 @@ def get_contact(message):
         return
 
     contact = message.contact
-    user = User(id=message.from_user.id, first_name=contact.first_name, last_name=contact.last_name, phone_number=contact.phone_number)
+    user = bot.data.users_hander.get_user(message.chat.id)
+    user = User(user.id, username = user.username, first_name = contact.first_name, last_name = contact.last_name, phone_number = contact.phone_number)
     bot.data.users_handler.set_user(user)
     bot.send_message(message.chat.id, text = 'Информация получена! Теперь у вас есть доступ к разделу обучение',reply_markup=Markup.remove)
 

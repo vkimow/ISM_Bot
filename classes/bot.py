@@ -1,19 +1,20 @@
 import telebot
 
 from telebot import types
-from config import Paths, Resources, SpreadsheetIds
-from massage_parser import MassageParser
-from massage_downloader import MassageDownloader
-from users_db_handler import UsersDataBaseHandler
-from users_handler import UsersHandler
+from config import SpreadsheetIds
+from massage.massage_parser import MassageParser
+from massage.massage_downloader import MassageDownloader
+from users.users_db_handler import UsersDataBaseHandler
+from users.users_handler import UsersHandler
+from users.admins_handler import AdminsHandler
 
 class BotData:
-    def __init__(self, about, links, massage, courses, admins, users_handler):
+    def __init__(self, about, links, massage, courses, admins_handler, users_handler):
         self.about = about
         self.links = links
         self.massage = massage
         self.courses = courses
-        self.admins = admins
+        self.admins_handler = admins_handler
         self.users_handler = users_handler
 
 class Bot:
@@ -24,8 +25,6 @@ class Bot:
         self.google_services = google_services
         self.data = data
         self.telegram_bot.add_custom_filter(Bot.IsBotActive())
-
-
 
     class IsBotActive(telebot.custom_filters.SimpleCustomFilter):
         key = 'is_active'
@@ -41,14 +40,16 @@ class Bot:
         about, links, info_files_to_download = massage_parser.parse_info(SpreadsheetIds.info)
         massage, massage_files_to_download = massage_parser.parse_massage(SpreadsheetIds.services)
         courses = massage_parser.parse_education(SpreadsheetIds.education)
+
         admins = massage_parser.parse_admins(SpreadsheetIds.admins)
+        admins_hander = AdminsHandler(admins)
 
         users_db_handler = UsersDataBaseHandler()
         users = users_db_handler.get_all_users()
         users_handler = UsersHandler(users, users_db_handler)
 
         Bot.active = False
-        data = BotData(about, links, massage, courses, admins, users_handler)
+        data = BotData(about, links, massage, courses, admins_hander, users_handler)
         self.data = data
 
         files_to_download = info_files_to_download + massage_files_to_download
@@ -57,10 +58,9 @@ class Bot:
 
     def setup_admins(self):
         massage_parser = MassageParser(self.google_services)
-        massage_downloader = MassageDownloader(self.google_services)
-
         admins = massage_parser.parse_admins(SpreadsheetIds.admins)
-        self.data.admins = admins
+        admins_hander = AdminsHandler(admins)
+        self.data.admins_hander = admins_hander
 
     def send_message(self, id, photo_path=None, text=None, reply_markup=None, reply_to_message_id = None, parse_mode='Markdown'):
         if photo_path:
