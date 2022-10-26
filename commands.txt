@@ -1,3 +1,4 @@
 about - О нас
 services - Услуги
 education - Обучение
+help - Помощь

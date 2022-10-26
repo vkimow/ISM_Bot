@@ -36,9 +36,6 @@ def show_education(chat_id, user_id):
     text = 'Вы еще не проходили обучение. Запишитесь и вам откроется доступ к материалам!' if len(courses) == 0 else ''
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Education'), text= text, reply_markup=Markup.Education.main(courses, bot.data.links))
 
-def show_help(chat_id):
-    return
-
 def show_admin(chat_id):
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Admin'), reply_markup=Markup.Admin.main())
     return
@@ -47,15 +44,22 @@ def show_request_phone_number(chat_id):
     message = bot.send_message(chat_id, text='Для доступа к обущающим матераиалам поделитесь своим номером', reply_markup=Markup.GetContact.main())
     bot.register_next_step_handler(message, get_contact)
 
+def show_help(chat_id, user):
+    help_text = '*Выберите нужную вам команду*'
+    help_text += '\n\n/about - Кто мы такие? Где и как нас найти?'
+    help_text += '\n\n/services - Наши услуги. Вы сможете записаться на сеанс к конкретному специалисту или узнать об актуальных акциях.'
+    help_text += '\n\n/education - Программы обучения. Повторите уже пройденный материал или запишитесь на новый семинар.'
+    if user.username in bot.data.admins:
+        help_text += '\n\n/admin - Панель управления админа'
 
-def add_user(user_id):
-    user = User(user_id)
-    bot.data.users_handler.try_add_user(user)
+    bot.send_message(chat_id, text=help_text)
+    return
 
 def user_has_number(user_id):
     user = bot.data.users_handler.get_user(user_id)
     if not user:
-        add_user(user_id)
+        user = User(user_id)
+        bot.data.users_handler.try_add_user(user)
         return False
 
     if not user.phone_number:
@@ -69,15 +73,19 @@ def get_user_number(user_id):
 
 @bot.telegram_bot.message_handler(commands=['start'], is_active=True)
 def start_command(message):
-    add_user(message.from_user.id)
+    user = User(message.from_user.id)
+    if bot.data.users_handler.try_add_user(user):
+        bot.send_message('Добро пожаловать!')
+        show_help(message.chat.id, message.from_user)
 
 @bot.telegram_bot.message_handler(commands=['help'], is_active=True)
 def help_command(message):
-    show_help(message.chat.id)
+    show_help(message.chat.id, message.from_user)
 
 @bot.telegram_bot.message_handler(commands=['admin'], is_active=True)
 def admin_command(message):
-    show_admin(message.chat.id)
+    if message.from_user.username in bot.data.admins:
+        show_admin(message.chat.id)
 
 @bot.telegram_bot.message_handler(commands=['about'], is_active=True)
 def about_command(message):

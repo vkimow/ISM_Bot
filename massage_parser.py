@@ -200,13 +200,17 @@ class MassageParser:
 
     def parse_admins(self, spreadsheet_id):
         def parse_main(sheet):
-            result = []
+            result = {}
             telegram_col = 0
 
             for row in sheet:
                 telegram = row[telegram_col]
                 admin = Admin(telegram)
-                result.append(admin)
+
+                if telegram in result:
+                    continue
+
+                result[telegram] = admin
 
             return result
 
