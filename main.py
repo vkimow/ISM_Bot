@@ -1,4 +1,3 @@
-from classes.number import Number
 from classes.bot import Bot
 import telebot
 from classes.users import User
@@ -30,9 +29,8 @@ def show_about(chat_id):
 def show_services(chat_id):
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Services'), reply_markup=Markup.Services.main())
 
-def show_education(chat_id, telegram_user):
-    phone_number = get_user_number(telegram_user)
-    courses = list(filter(lambda course: phone_number in course.numbers, bot.data.courses))
+def show_education(chat_id, user: User):
+    courses = list(filter(lambda course: user.phone_number in course.numbers, bot.data.courses))
     text = 'Вы еще не проходили обучение. Запишитесь и вам откроется доступ к материалам!' if len(courses) == 0 else ''
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Education'), text= text, reply_markup=Markup.Education.main(courses, bot.data.links))
 
@@ -44,48 +42,33 @@ def show_request_phone_number(chat_id):
     message = bot.send_message(chat_id, text='Для доступа к обущающим матераиалам поделитесь своим номером', reply_markup=Markup.GetContact.main())
     bot.register_next_step_handler(message, get_contact)
 
-def show_help(chat_id, user):
+def show_help(chat_id, user: User):
     help_text = '*Выберите нужную вам команду*'
     help_text += '\n\n/about - Кто мы такие? Где и как нас найти?'
     help_text += '\n\n/services - Наши услуги. Вы сможете записаться на сеанс к конкретному специалисту или узнать об актуальных акциях.'
     help_text += '\n\n/education - Программы обучения. Повторите уже пройденный материал или запишитесь на новый семинар.'
-    if user.username in bot.data.admins:
+    if bot.data.admins_handler.is_admin(user):
         help_text += '\n\n/admin - Панель управления админа'
 
     bot.send_message(chat_id, text=help_text)
     return
 
-def user_has_number(telegram_user):
-    user = bot.data.users_handler.get_user(telegram_user.user_id)
-    if not user:
-        user = User(telegram_user.id, username = telegram_user.username, first_name = telegram_user.first_name, last_name = telegram_user.last_name)
-        bot.data.users_handler.try_add_user(user)
-        return False
-
-    if not user.phone_number:
-        return False
-
-    return True
-
-def get_user_number(telegram_user):
-    user = bot.data.users_handler.get_user(telegram_user.id)
-    return user.phone_number
-
 @bot.telegram_bot.message_handler(commands=['start'], is_active=True)
 def start_command(message):
-    telegram_user = message.from_user
-    user = User(telegram_user.id, username = telegram_user.username, first_name = telegram_user.first_name, last_name = telegram_user.last_name)
+    user = User.create_from_telegram_user(message.from_user)
     if bot.data.users_handler.try_add_user(user):
         bot.send_message('Добро пожаловать!')
-        show_help(message.chat.id, message.from_user)
+        show_help(message.chat.id, user)
 
 @bot.telegram_bot.message_handler(commands=['help'], is_active=True)
 def help_command(message):
-    show_help(message.chat.id, message.from_user)
+    user = bot.data.users_handler.get_user_or_add_if_none(message.from_user)
+    show_help(message.chat.id, user)
 
 @bot.telegram_bot.message_handler(commands=['admin'], is_active=True)
 def admin_command(message):
-    if message.from_user.username in bot.data.admins:
+    user = bot.data.users_handler.get_user_or_add_if_none(message.from_user)
+    if bot.data.admins_handler.is_admin(user):
         show_admin(message.chat.id)
 
 @bot.telegram_bot.message_handler(commands=['about'], is_active=True)
@@ -98,8 +81,9 @@ def appointment_command(message):
 
 @bot.telegram_bot.message_handler(commands=['education'], is_active=True)
 def education_command(message):
-    if(user_has_number(message.from_user)):
-        show_education(message.chat.id, message.from_user)
+    user = bot.data.users_handler.get_user_or_add_if_none(message.from_user)
+    if user.phone_number:
+        show_education(message.chat.id, user)
     else:
         show_request_phone_number(message.chat.id)
 
@@ -135,15 +119,15 @@ def services_callback(call):
 def education_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
-        phone_number = get_user_number(call.from_user)
-        courses = list(filter(lambda course: phone_number in course.numbers, bot.data.courses))
+        user = bot.data.users_handler.get_user_or_add_if_none(call.from_user)
+        courses = list(filter(lambda course: user.phone_number in course.numbers, bot.data.courses))
         text = 'Вы еще не проходили обучение. Запишитесь и вам откроется доступ к материалам!' if len(courses) == 0 else ''
         bot.edit_text(call.message, text=text, reply_markup = Markup.Education.main(courses, bot.data.links))
     elif keyword == 'course':
-        phone_number = get_user_number(call.from_user)
+        user = bot.data.users_handler.get_user_or_add_if_none(call.from_user)
         index = int(call.data.split()[2])
         course = bot.data.courses[index]
-        lessons = list(filter(lambda lesson: phone_number in lesson.numbers, course.lessons))
+        lessons = list(filter(lambda lesson: user.phone_number in lesson.numbers, course.lessons))
         bot.edit_text(call.message, text=course.get_text(), reply_markup = Markup.Education.course(course, lessons))
 
     bot.answer_callback_query(call.id)
@@ -212,9 +196,7 @@ def get_contact(message):
         show_request_phone_number(message.chat.id)
         return
 
-    contact = message.contact
-    user = bot.data.users_hander.get_user(message.chat.id)
-    user = User(user.id, username = user.username, first_name = contact.first_name, last_name = contact.last_name, phone_number = contact.phone_number)
+    user = User.create_from_telegram_user_and_contact(message.from_user, message.contact)
     bot.data.users_handler.set_user(user)
     bot.send_message(message.chat.id, text = 'Информация получена! Теперь у вас есть доступ к разделу обучение',reply_markup=Markup.remove)
 

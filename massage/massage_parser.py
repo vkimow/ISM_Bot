@@ -4,7 +4,7 @@ from google.google_download import Downloadable
 from classes.services import Service, Specialist, Massage
 from classes.education import Lesson, Course
 from config import Paths
-from classes.users import Admins, User
+from classes.users import Admin
 from classes.number import Number
 
 
@@ -82,22 +82,22 @@ class MassageParser:
             result = []
             name_row = start_index + 0
             link_row = start_index + 1
-            numbers_start_row = start_index + 2
+            phone_numbers_start_row = start_index + 2
 
             for col in sheet:
                 name = col[name_row]
                 link = col[link_row]
-                numbers = set()
+                phone_numbers = set()
 
-                index = numbers_start_row
+                index = phone_numbers_start_row
                 while index < len(col) and col[index]:
-                    numberText = col[index]
-                    numberText = Number.ToUnifiedStyleNumber(numberText)
-                    if(Number.IsUnifiedStyleNumber(numberText)):
-                        numbers.add(numberText)
+                    phone_number = col[index]
+                    phone_number = Number.ToUnifiedStyleNumber(phone_number)
+                    if(Number.IsUnifiedStyleNumber(phone_number)):
+                        phone_numbers.add(phone_number)
                     index += 1
 
-                lesson = Lesson(name, link, numbers)
+                lesson = Lesson(name, link, phone_numbers)
                 result.append(lesson)
 
             return result
@@ -200,55 +200,30 @@ class MassageParser:
 
     def parse_admins(self, spreadsheet_id):
         def parse_main(sheet):
-            telegrams = set()
+            result = []
             phone_numbers = set()
-            telegram_col = 0
-            phone_number_col = 0
+            username_col = 0
+            phone_number_col = 1
 
             for row in sheet:
-                telegram = row[telegram_col]
-                phone_number = row[phone_number_col]
+                try:
+                    username = row[username_col]
+                except:
+                    username = None
 
-                if telegram:
-                    telegrams.add(telegram)
-                if phone_number:
-                    phone_numbers.add(phone_number)
+                try:
+                    phone_number = row[phone_number_col]
+                except:
+                    phone_number = None
 
-            admins = Admins(telegrams, phone_numbers)
-            return admins
-
-        def get_sheet(name, start_col = '', end_col = '', start_row = ''):
-            return self.__get_sheet(spreadsheet_id, name, start_col, end_col, start_row)
-
-        admins = parse_main(get_sheet('Админы', 'A', 'B', '2'))
-        return admins
-
-
-    def parse_users(self, spreadsheet_id):
-        def parse_main(sheet):
-            result = dict()
-            user_id_col = 0
-            name_col = 0
-            number_col = 0
-
-            if not sheet:
-                return result
-
-            for row in sheet:
-                user_id = row[user_id_col]
-                name = row[name_col]
-                number = row[number_col]
-                user = User(user_id, name, number)
-
-                if user_id in result:
-                    continue
-
-                result[user_id] = user
+                phone_number = Number.ToUnifiedStyleNumber(phone_number)
+                admin = Admin(username, phone_number)
+                result.append(admin)
 
             return result
 
         def get_sheet(name, start_col = '', end_col = '', start_row = ''):
             return self.__get_sheet(spreadsheet_id, name, start_col, end_col, start_row)
 
-        users = parse_main(get_sheet('Пользователи', 'A', 'C', '2'))
-        return users
+        admins = parse_main(get_sheet('Админы', 'A', 'B', '2'))
+        return admins

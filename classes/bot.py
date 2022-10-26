@@ -115,3 +115,6 @@ class Bot:
 
     def register_next_step_handler(self, message, step):
         self.telegram_bot.register_next_step_handler(message, step)
+
+    def forward_message(self,to_chat_id, from_chat_id, message_id):
+        self.telegram_bot.forward_message(to_chat_id, from_chat_id, message_id)
