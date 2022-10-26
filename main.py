@@ -16,7 +16,7 @@ bot = Bot(  telegram_bot = telebot.TeleBot(config.BotTokens.test),
             google_services = GoogleServices(create_google_drive_service(), create_google_sheet_service()),
             data = None)
 
-bot.setup()
+bot.setup_all()
 
 def show_actions(chat_id):
     bot.send_message(chat_id, text = 'Актуальные акции')
@@ -67,27 +67,27 @@ def get_user_number(user_id):
     user = bot.data.users_handler.get_user(user_id)
     return user.phone_number
 
-@bot.telegram_bot.message_handler(commands=['start'])
+@bot.telegram_bot.message_handler(commands=['start'], is_active=True)
 def start_command(message):
     add_user(message.from_user.id)
 
-@bot.telegram_bot.message_handler(commands=['help'])
+@bot.telegram_bot.message_handler(commands=['help'], is_active=True)
 def help_command(message):
     show_help(message.chat.id)
 
-@bot.telegram_bot.message_handler(commands=['admin'])
+@bot.telegram_bot.message_handler(commands=['admin'], is_active=True)
 def admin_command(message):
     show_admin(message.chat.id)
 
-@bot.telegram_bot.message_handler(commands=['about'])
+@bot.telegram_bot.message_handler(commands=['about'], is_active=True)
 def about_command(message):
     show_about(message.chat.id)
 
-@bot.telegram_bot.message_handler(commands=['services'])
+@bot.telegram_bot.message_handler(commands=['services'], is_active=True)
 def appointment_command(message):
     show_services(message.chat.id)
 
-@bot.telegram_bot.message_handler(commands=['education'])
+@bot.telegram_bot.message_handler(commands=['education'], is_active=True)
 def education_command(message):
     if(user_has_number(message.from_user.id)):
         show_education(message.chat.id, message.from_user.id)
@@ -95,7 +95,7 @@ def education_command(message):
         show_request_phone_number(message.chat.id)
 
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'about')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'about', is_active=True)
 def about_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
@@ -106,7 +106,7 @@ def about_callback(call):
     bot.answer_callback_query(call.id)
 
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'services')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'services', is_active=True)
 def services_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
@@ -122,7 +122,7 @@ def services_callback(call):
     bot.answer_callback_query(call.id)
 
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'education')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'education', is_active=True)
 def education_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
@@ -140,7 +140,7 @@ def education_callback(call):
     bot.answer_callback_query(call.id)
 
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'specialist')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'specialist', is_active=True)
 def specialist_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'back':
@@ -152,7 +152,7 @@ def specialist_callback(call):
     bot.answer_callback_query(call.id)
 
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'admin')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'admin', is_active=True)
 def admin_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
@@ -165,16 +165,19 @@ def admin_callback(call):
         bot.register_next_step_handler(message, request_to_forward_message)
     bot.answer_callback_query(call.id)
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'refresh')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'refresh', is_active=True)
 def refresh_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'all':
+        bot.setup_all()
         bot.edit_message(call.message, text='Вся информация успешно обновлена!')
     elif keyword == 'admins':
+        bot.setup_admins()
         bot.edit_message(call.message, text='Список админов успешно обновлен!')
+
     bot.answer_callback_query(call.id)
 
-@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'forward')
+@bot.telegram_bot.callback_query_handler(func=lambda call: call.data.split()[0] == 'forward', is_active=True)
 def forward_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'accept':
@@ -186,7 +189,7 @@ def forward_callback(call):
     bot.answer_callback_query(call.id)
 
 
-@bot.telegram_bot.message_handler(content_types=["text"])
+@bot.telegram_bot.message_handler(content_types=["text"], is_active=True)
 def message_handler(message):
     bot.send_message(message.chat.id, text = 'Этот бот не распознает текст. Используйте комманды, чтобы воспользоваться доступными функциями.', reply_markup=Markup.remove)
 
