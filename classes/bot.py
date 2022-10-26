@@ -1,26 +1,40 @@
-from classes.users import UserData
 import telebot
 
 from telebot import types
 from config import Paths, Resources, SpreadsheetIds
 from massage_parser import MassageParser
 from massage_downloader import MassageDownloader
+from users_db_handler import UsersDataBaseHandler
+from users_handler import UsersHandler
 
 class BotData:
-    def __init__(self, about, links, massage, courses, user_data):
+    def __init__(self, about, links, massage, courses, admins, users_handler):
         self.about = about
         self.links = links
         self.massage = massage
         self.courses = courses
-        self.user_data = user_data
+        self.admins = admins
+        self.users_handler = users_handler
 
 class Bot:
+    active = False
+
     def __init__(self, telegram_bot, google_services, data):
         self.telegram_bot = telegram_bot
         self.google_services = google_services
         self.data = data
+        self.telegram_bot.add_custom_filter(Bot.IsBotActive())
 
-    def setup(self):
+
+
+    class IsBotActive(telebot.custom_filters.SimpleCustomFilter):
+        key = 'is_active'
+
+        @staticmethod
+        def check(message: telebot.types.Message):
+            return Bot.active
+
+    def setup_all(self):
         massage_parser = MassageParser(self.google_services)
         massage_downloader = MassageDownloader(self.google_services)
 
@@ -28,21 +42,32 @@ class Bot:
         massage, massage_files_to_download = massage_parser.parse_massage(SpreadsheetIds.services)
         courses = massage_parser.parse_education(SpreadsheetIds.education)
         admins = massage_parser.parse_admins(SpreadsheetIds.admins)
-        users = massage_parser.parse_users(SpreadsheetIds.users)
 
-        user_data = UserData(admins, users)
-        data = BotData(about, links, massage, courses, user_data)
+        users_db_handler = UsersDataBaseHandler()
+        users = users_db_handler.get_all_users()
+        users_handler = UsersHandler(users, users_db_handler)
+
+        Bot.active = False
+        data = BotData(about, links, massage, courses, admins, users_handler)
         self.data = data
 
         files_to_download = info_files_to_download + massage_files_to_download
         massage_downloader.load(files_to_download)
+        Bot.active = True
 
-    def send_message(self, id, photo_path=None, text=None, reply_markup=None, parse_mode='Markdown'):
+    def setup_admins(self):
+        massage_parser = MassageParser(self.google_services)
+        massage_downloader = MassageDownloader(self.google_services)
+
+        admins = massage_parser.parse_admins(SpreadsheetIds.admins)
+        self.data.admins = admins
+
+    def send_message(self, id, photo_path=None, text=None, reply_markup=None, reply_to_message_id = None, parse_mode='Markdown'):
         if photo_path:
             with open(photo_path, 'rb') as photo:
-                return self.telegram_bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, parse_mode=parse_mode)
+                return self.telegram_bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id, parse_mode=parse_mode)
         else:
-            return self.telegram_bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, parse_mode=parse_mode)
+            return self.telegram_bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id, parse_mode=parse_mode)
 
     def edit_text(self, message, text=None, reply_markup=None, parse_mode='Markdown'):
         if message.photo:
@@ -87,3 +112,6 @@ class Bot:
 
     def answer_callback_query(self, call_id):
         return self.telegram_bot.answer_callback_query(call_id)
+
+    def register_next_step_handler(self, message, step):
+        self.telegram_bot.register_next_step_handler(message, step)

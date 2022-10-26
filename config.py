@@ -12,17 +12,17 @@ class BotTokens:
 
 class Paths:
     resource = 'resource'
-    actions = resource + '/actions'
-    backgrounds = resource + '/backgrounds'
-    specialists = resource + '/specialists'
-    anatomy = resource + '/anatomy'
+    local = resource + '/local'
+    remote = resource + '/remote'
+    data = local + '/data'
+    actions = remote + '/actions'
+    backgrounds = remote + '/backgrounds'
+    specialists = remote + '/specialists'
 
 class Resources:
     class Photos:
         def background(name):
             return f'{Paths.backgrounds}/{name}.jpg'
-        def organ(name):
-            return f'{Paths.anatomy}/{name}.jpg'
         def specialist(name):
             return f'{Paths.specialists}/{name}.jpg'
         def action(name_with_extension):
