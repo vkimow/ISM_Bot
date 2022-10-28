@@ -7,24 +7,23 @@ class Number:
         if not isinstance(number, str):
             return None
 
-        if len(number) == 12 and number.startswith('+'):
-            number = number[1:]
+        number = number.strip()
 
-        if not number.isnumeric():
-            return None
+        if number.startswith('8'):
+            number = number[1:]
 
         if len(number) == 10:
             number = '7' + number
 
         if len(number) == 11:
-            if number.startswith('8'):
-                number = '7' + number[1:]
+            number = '+' + number
 
-            if number.startswith('7'):
+        if len(number) == 12:
+            if number.startswith('+') and number[1:].isnumeric():
                 return number
 
         return None
 
     @staticmethod
     def IsUnifiedStyleNumber(number):
-        return number and isinstance(number, str) and number.isnumeric() and len(number) == 11 and number.startswith('7')
+        return number and isinstance(number, str) and number.startswith('+') and number[1:].isnumeric() and len(number) == 12

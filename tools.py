@@ -21,7 +21,3 @@ class Tools:
     @staticmethod
     def in_range(value, min, max):
         return min <= value <= max
-
-    @staticmethod
-    def is_right_user(user, right_usernames):
-        return user.username in right_usernames

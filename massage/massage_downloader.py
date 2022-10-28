@@ -1,5 +1,5 @@
 import os
-from google_parser import Parser
+from google.google_parser import Parser
 from config import Paths
 
 class MassageDownloader:

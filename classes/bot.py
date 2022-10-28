@@ -1,52 +1,73 @@
 import telebot
 
 from telebot import types
-from config import Paths, Resources, SpreadsheetIds
-from massage_parser import MassageParser
-from massage_downloader import MassageDownloader
-from users_db_handler import UsersDataBaseHandler
-from users_handler import UsersHandler
+from config import SpreadsheetIds
+from massage.massage_parser import MassageParser
+from massage.massage_downloader import MassageDownloader
+from users.users_db_handler import UsersDataBaseHandler
+from users.users_handler import UsersHandler
+from users.admins_handler import AdminsHandler
 
 class BotData:
-    def __init__(self, about, links, massage, courses, admins, users_handler):
+    def __init__(self, about, links, massage, courses, admins_handler, users_handler):
         self.about = about
         self.links = links
         self.massage = massage
         self.courses = courses
-        self.admins = admins
+        self.admins_handler = admins_handler
         self.users_handler = users_handler
 
 class Bot:
+    active = False
+
     def __init__(self, telegram_bot, google_services, data):
         self.telegram_bot = telegram_bot
         self.google_services = google_services
         self.data = data
+        self.telegram_bot.add_custom_filter(Bot.IsBotActive())
 
-    def setup(self):
+    class IsBotActive(telebot.custom_filters.SimpleCustomFilter):
+        key = 'is_active'
+
+        @staticmethod
+        def check(message: telebot.types.Message):
+            return Bot.active
+
+    def setup_all(self):
         massage_parser = MassageParser(self.google_services)
         massage_downloader = MassageDownloader(self.google_services)
 
         about, links, info_files_to_download = massage_parser.parse_info(SpreadsheetIds.info)
         massage, massage_files_to_download = massage_parser.parse_massage(SpreadsheetIds.services)
         courses = massage_parser.parse_education(SpreadsheetIds.education)
+
         admins = massage_parser.parse_admins(SpreadsheetIds.admins)
+        admins_hander = AdminsHandler(admins)
 
         users_db_handler = UsersDataBaseHandler()
         users = users_db_handler.get_all_users()
         users_handler = UsersHandler(users, users_db_handler)
 
-        data = BotData(about, links, massage, courses, admins, users_handler)
+        Bot.active = False
+        data = BotData(about, links, massage, courses, admins_hander, users_handler)
         self.data = data
 
         files_to_download = info_files_to_download + massage_files_to_download
         massage_downloader.load(files_to_download)
+        Bot.active = True
 
-    def send_message(self, id, photo_path=None, text=None, reply_markup=None, parse_mode='Markdown'):
+    def setup_admins(self):
+        massage_parser = MassageParser(self.google_services)
+        admins = massage_parser.parse_admins(SpreadsheetIds.admins)
+        admins_hander = AdminsHandler(admins)
+        self.data.admins_hander = admins_hander
+
+    def send_message(self, id, photo_path=None, text=None, reply_markup=None, reply_to_message_id = None, parse_mode='Markdown'):
         if photo_path:
             with open(photo_path, 'rb') as photo:
-                return self.telegram_bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, parse_mode=parse_mode)
+                return self.telegram_bot.send_photo(chat_id=id, photo=photo, caption=text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id, parse_mode=parse_mode)
         else:
-            return self.telegram_bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, parse_mode=parse_mode)
+            return self.telegram_bot.send_message(chat_id=id, text=text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id, parse_mode=parse_mode)
 
     def edit_text(self, message, text=None, reply_markup=None, parse_mode='Markdown'):
         if message.photo:
@@ -94,3 +115,6 @@ class Bot:
 
     def register_next_step_handler(self, message, step):
         self.telegram_bot.register_next_step_handler(message, step)
+
+    def forward_message(self,to_chat_id, from_chat_id, message_id):
+        self.telegram_bot.forward_message(to_chat_id, from_chat_id, message_id)

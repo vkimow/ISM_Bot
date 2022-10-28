@@ -11,7 +11,6 @@ class AboutUs:
 
         return result
 
-
 class Paragraph:
     def __init__(self, title, text):
         self.title = title
