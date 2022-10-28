@@ -11,6 +11,7 @@ class MassageDownloader:
             if not os.path.exists(folder_path):
                     os.makedirs(folder_path)
 
+        create_folder(Paths.resource)
         create_folder(Paths.remote)
         create_folder(Paths.actions)
         create_folder(Paths.backgrounds)

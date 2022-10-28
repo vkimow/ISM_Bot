@@ -9,6 +9,12 @@ class SqliteConnectionFactory:
     @classmethod
     def connection(cls):
         if not cls.__connection:
+            def create_folder(folder_path):
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
+            create_folder(Paths.resource)
+            create_folder(Paths.local)
+
             path = f'{Paths.data}/users.db'
             if not os.path.isfile(path):
                 open(path, 'a').close()
