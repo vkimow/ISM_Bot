@@ -14,6 +14,7 @@ class SqliteConnectionFactory:
                     os.makedirs(folder_path)
             create_folder(Paths.resource)
             create_folder(Paths.local)
+            create_folder(Paths.data)
 
             path = f'{Paths.data}/users.db'
             if not os.path.isfile(path):
