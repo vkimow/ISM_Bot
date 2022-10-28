@@ -1,8 +1,9 @@
-from classes.info import AboutUs, GlobalLinks, Paragraph
+from classes.info import AboutUs, GlobalLinks
+from classes.text import Paragraph
 from classes.link import Link, LinkGroup
 from google.google_parser import Parser
 from google.google_download import Downloadable
-from classes.services import Service, Specialist, Massage
+from classes.services import Action, Service, Specialist, Massage
 from classes.education import Lesson, Course
 from config import Paths
 from classes.users import Admin
@@ -155,16 +156,47 @@ class MassageParser:
     def parse_massage(self, spreadsheet_id):
         def parse_actions(sheet):
             result = []
-            link_col = 0
+            photos_to_download = []
+            title_col = 0
+            text_col = 1
+            link_col = 2
+            photo_link_col = 3
+
             index = 1
 
             for row in sheet:
-                link = row[link_col]
-                action = Downloadable(link, Paths.actions, f'Акция {index}', 'jpg')
+                try:
+                    title = row[title_col]
+                except:
+                    title = None
+
+                try:
+                    text = row[text_col]
+                except:
+                    text = None
+
+                try:
+                    link = row[link_col]
+                except:
+                    link = None
+
+                try:
+                    photo_link = row[photo_link_col]
+                except:
+                    photo_link = None
+
+                photo_name = None
+                if photo_link:
+                    photo_name = f'Акция {index}'
+                    photo_to_download = Downloadable(photo_link, Paths.actions, photo_name, 'jpg')
+                    photos_to_download.append(photo_to_download)
+
+                paragraph = Paragraph(title, text)
+                action = Action(paragraph, link, photo_name)
                 result.append(action)
                 index += 1
 
-            return result
+            return result, photos_to_download
 
         def parse_specialists(sheet):
             result = []
@@ -207,11 +239,11 @@ class MassageParser:
         def get_sheet(name, start_col = '', end_col = '', start_row = ''):
             return self.__get_sheet(spreadsheet_id, name, start_col, end_col, start_row)
 
-        actions_to_download = parse_actions(get_sheet('Акции', 'A', 'A', '2'))
+        actions, actions_to_download = parse_actions(get_sheet('Акции', 'A', 'D', '2'))
         specialists, photos_to_download = parse_specialists(get_sheet('Специалисты', 'A', 'E', '2'))
         services = parse_services(get_sheet('Услуги', 'A', 'B', '2'))
 
-        massage = Massage(specialists, services)
+        massage = Massage(actions, specialists, services)
         files_to_download = actions_to_download + photos_to_download
 
         return massage, files_to_download

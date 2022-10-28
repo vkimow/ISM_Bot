@@ -19,9 +19,11 @@ bot.setup_all()
 
 def show_actions(chat_id):
     bot.send_message(chat_id, text = 'Актуальные акции')
-    for root, dirs, files in os.walk(Paths.actions):
-        for file in files:
-            bot.send_message(chat_id, photo_path=Resources.Photos.action(file))
+    for action in bot.data.massage.actions:
+        text = action.paragraph.get_text()
+        photo_path = action.get_photo_path()
+        reply_markup = Markup.Action.concrete(action) if action.link else None
+        bot.send_message(chat_id, text=text, photo_path=photo_path, reply_markup=reply_markup)
 
 def show_about(chat_id):
     bot.send_message(chat_id, text=bot.data.about.get_text(), photo_path=Resources.Photos.background('About'), reply_markup=Markup.About.main(bot.data.about))

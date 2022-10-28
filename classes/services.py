@@ -1,9 +1,20 @@
+from pathlib import Path
 from config import Paths
 
 class Massage:
-    def __init__(self, specialists, services):
+    def __init__(self, actions, specialists, services):
+        self.actions = actions
         self.specialists = specialists
         self.services = services
+
+class Action:
+    def __init__(self, paragraph, link, photo_name):
+        self.paragraph = paragraph
+        self.link = link
+        self.photo_name = photo_name
+
+    def get_photo_path(self):
+        return f'{Paths.actions}/{self.photo_name}.jpg' if self.photo_name else None
 
 class Specialist:
     def __init__(self, name, surname, description, appointment_link):

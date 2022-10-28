@@ -113,6 +113,13 @@ class Markup:
             result.add(appointment, back)
             return result
 
+    class Action:
+        def concrete(action):
+            result = types.InlineKeyboardMarkup(row_width = 1)
+            link = types.InlineKeyboardButton(text = 'Открыть на сайте', url = action.link)
+            result.add(link)
+            return result
+
     class Education:
         def main(courses, links):
             result = types.InlineKeyboardMarkup(row_width = 1)
