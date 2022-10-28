@@ -201,7 +201,6 @@ class MassageParser:
     def parse_admins(self, spreadsheet_id):
         def parse_main(sheet):
             result = []
-            phone_numbers = set()
             username_col = 0
             phone_number_col = 1
 

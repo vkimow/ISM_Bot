@@ -7,7 +7,7 @@ class SpreadsheetIds:
 
 
 class BotTokens:
-    main = '5600845189:AAHnJX5AZl3mKz7V6agQndnVyvYFq6cfjNM'
+    main = '5684229583:AAGHz1L6zQNxv9jT0aRA9VrBocq4UrND_xM'
     test = '5428034932:AAGBjzKvAiM8dZ205GEOY9yM1wWu2FZrfYo'
 
 class Paths:

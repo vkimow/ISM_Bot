@@ -81,7 +81,7 @@ class UsersDataBaseHandler:
             if user_id in users:
                 continue
 
-            username = get_none_if_string_none(first_name)
+            username = get_none_if_string_none(username)
             first_name = get_none_if_string_none(first_name)
             last_name = get_none_if_string_none(last_name)
             phone_number = get_none_if_string_none(phone_number)
