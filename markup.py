@@ -3,6 +3,17 @@ from telebot import types
 class Markup:
     remove = types.ReplyKeyboardRemove()
 
+    @staticmethod
+    def link(link):
+        return types.InlineKeyboardButton(text = link.name, url = link.url)
+
+    @staticmethod
+    def link_group(link_group):
+        result = []
+        for link in link_group.links:
+            result.append(Markup.link(link))
+        return result
+
     class Main:
         show = types.ReplyKeyboardRemove()
 
@@ -42,23 +53,25 @@ class Markup:
             return result
 
     class About:
-        def main(links):
+        def main(about):
             result = types.InlineKeyboardMarkup(row_width = 1)
             map = types.InlineKeyboardButton(text = 'Открыть на карте', callback_data='about maps')
-            vk = types.InlineKeyboardButton(text = 'Группа Вконтакте', url = links.vk_group)
-            website = types.InlineKeyboardButton(text = 'Наш сайт', url = links.website)
+            result.add(map)
 
-            result.add(map, vk, website)
+            for link in Markup.link_group(about.links):
+                result.add(link)
+
             return result
 
-        def maps(links):
+        def maps(about):
             result = types.InlineKeyboardMarkup(row_width = 1)
-            map_2gis = types.InlineKeyboardButton(text = 'Открыть в 2GIS', url = links.map.gis)
-            map_yandex = types.InlineKeyboardButton(text = 'Открыть в Яндекс Картах', url = links.map.yandex)
-            map_google = types.InlineKeyboardButton(text = 'Открыть в Google Картах', url = links.map.google)
-            back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='about main')
 
-            result.add(map_2gis, map_yandex, map_google, back)
+
+            for link in Markup.link_group(about.maps):
+                result.add(link)
+
+            back = types.InlineKeyboardButton(text = 'Вернуться', callback_data='about main')
+            result.add(back)
             return result
 
 

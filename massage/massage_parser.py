@@ -1,4 +1,5 @@
-from classes.info import AboutUs, Paragraph, Links, MapLinks
+from classes.info import AboutUs, GlobalLinks, Paragraph
+from classes.link import Link, LinkGroup
 from google.google_parser import Parser
 from google.google_download import Downloadable
 from classes.services import Service, Specialist, Massage
@@ -32,7 +33,7 @@ class MassageParser:
 
             return result
 
-        def parse_about(sheet):
+        def parse_about_paragraphs(sheet):
             paragraphs = []
             title_col = 0
             text_col = 1
@@ -44,34 +45,52 @@ class MassageParser:
                 paragraph = Paragraph(title, text)
                 paragraphs.append(paragraph)
 
-            return AboutUs(paragraphs)
+            return paragraphs
+
+        def parse_about_links(sheet):
+            links = []
+            name_col = 0
+            url_col = 1
+
+            for row in sheet:
+                name = row[name_col]
+                url = row[url_col]
+
+                link = Link(name, url)
+                links.append(link)
+
+            return LinkGroup('Ссылки', links)
+
+        def parse_about_maps(sheet):
+            map_links = []
+            map_name_col = 0
+            url_col = 1
+
+            for row in sheet:
+                map_name = row[map_name_col]
+                url = row[url_col]
+
+                map_link = Link(f'Открыть в {map_name}', url)
+                map_links.append(map_link)
+
+            return LinkGroup('Карты', map_links)
 
         def parse_links(sheet):
-            appointment_link_row = 0
-            education_link_row = 1
-            website_link_row = 2
-            vk_group_link_row = 3
-            map_gis_link_row = 4
-            map_yandex_link_row = 5
-            map_google_link_row = 6
+            education_link_row = 0
 
-            appointment_link = sheet[appointment_link_row][1]
             education_link = sheet[education_link_row][1]
-            website_link = sheet[website_link_row][1]
-            vk_group_link = sheet[vk_group_link_row][1]
-            map_gis_link = sheet[map_gis_link_row][1]
-            map_yandex_link = sheet[map_yandex_link_row][1]
-            map_google_link = sheet[map_google_link_row][1]
 
-            map_links = MapLinks(map_gis_link, map_yandex_link, map_google_link)
-            return Links(appointment_link, education_link, website_link, vk_group_link, map_links)
+            return GlobalLinks(education_link)
 
         def get_sheet(name, start_col = '', end_col = '', start_row = ''):
             return self.__get_sheet(spreadsheet_id, name, start_col, end_col, start_row)
 
-        backgrounds_to_download = parse_backgrounds(get_sheet('Фон', 'A', 'C', '2'))
-        about = parse_about(get_sheet('О Нас', 'A', 'B', '2'))
         links = parse_links(get_sheet('Ссылки', 'A', 'B', '1'))
+        backgrounds_to_download = parse_backgrounds(get_sheet('Фон', 'A', 'C', '2'))
+        about_paragraphs = parse_about_paragraphs(get_sheet('О Нас', 'A', 'B', '2'))
+        about_links = parse_about_links(get_sheet('О Нас', 'D', 'E', '2'))
+        about_maps = parse_about_maps(get_sheet('О Нас', 'G', 'H', '2'))
+        about = AboutUs(about_paragraphs, about_links, about_maps)
 
         files_to_download = backgrounds_to_download
         return about, links, files_to_download

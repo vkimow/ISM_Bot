@@ -24,7 +24,7 @@ def show_actions(chat_id):
             bot.send_message(chat_id, photo_path=Resources.Photos.action(file))
 
 def show_about(chat_id):
-    bot.send_message(chat_id, text=bot.data.about.get_text(), photo_path=Resources.Photos.background('About'), reply_markup=Markup.About.main(bot.data.links))
+    bot.send_message(chat_id, text=bot.data.about.get_text(), photo_path=Resources.Photos.background('About'), reply_markup=Markup.About.main(bot.data.about))
 
 def show_services(chat_id):
     bot.send_message(chat_id, photo_path=Resources.Photos.background('Services'), reply_markup=Markup.Services.main())
@@ -92,9 +92,9 @@ def education_command(message):
 def about_callback(call):
     keyword = call.data.split()[1]
     if keyword == 'main':
-        bot.edit_reply_markup(call.message, reply_markup=Markup.About.main(bot.data.links))
+        bot.edit_reply_markup(call.message, reply_markup=Markup.About.main(bot.data.about))
     elif keyword == 'maps':
-        bot.edit_reply_markup(call.message, reply_markup=Markup.About.maps(bot.data.links))
+        bot.edit_reply_markup(call.message, reply_markup=Markup.About.maps(bot.data.about))
 
     bot.answer_callback_query(call.id)
 
